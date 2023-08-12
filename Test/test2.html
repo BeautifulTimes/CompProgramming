@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body onload="sessionget()">
+
+<body>
+<h1>Chatbot Therapist Demo</h1>
+<hr>
+<p> Small application built with GPT-3 to emulate a therapist</p>
+<label for="feedback">GPT short Essay Generator Enter topic of the essay below</label><br>
+<textarea id="feedback" name="feedback" style= "width: 300; height: 300;"></textarea> 
+<button onclick="runSpeechRecognition()">Speak</button>
+
+<div id="login">
+<button type="button" onclick="GetResponse()">Get GPT-3 Essay</button>
+</div>
+<script>
+var index=0;
+const recognition = new webkitSpeechRecognition(); // create a new SpeechRecognition object
+
+function runSpeechRecognition() {
+  var output = document.getElementById("feedback");
+      var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+      var recognition = new SpeechRecognition();
+  
+      // This runs when the speech recognition service starts
+      recognition.onstart = function() {
+          action.innerHTML = "<small>listening, please speak...</small>";
+      };
+      
+      recognition.onspeechend = function() {
+          action.innerHTML = "<small>stopped listening, hope you are done...</small>";
+          recognition.stop();
+      }
+    
+      // This runs when the speech recognition service returns result
+      recognition.onresult = function(event) {
+          var transcript = event.results[0][0].transcript;
+          output.value = "<b>Text:</b> " + transcript;
+      };
+    
+        // start recognition
+        recognition.start();
+}
+function GetResponse() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.open("POST", "http://68.183.195.190:8000/feedback", true);
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+    const gptpara = document.createElement("p");
+    gptpara.innerText = this.responseText ;
+    document.body.appendChild(gptpara);
+		if (this.responseText == 200)
+		{
+			document.getElementById("warning").innerHTML ="Feedback Succesfully submitted";
+		}
+    }
+  };
+  const para = document.createElement("p");
+  para.innerText = document.getElementById("feedback").value  ;
+  document.body.appendChild(para);
+  xhttp.setRequestHeader('Content-Type', 'application/json');
+  xhttp.send(JSON.stringify({
+    feedback: document.getElementById("feedback").value,
+    userid: index
+}));};
+function sessionget() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.open("GET", "http://68.183.195.190:8000/feedback", true);
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      index = this.responseText
+    }
+  };
+  xhttp.setRequestHeader('Content-Type', 'application/json');
+  xhttp.send();
+};
+</script>
+<div id="demo">
+</div>
+</div>
+<div id="warning">
+</div>
+</body>
+</html>
